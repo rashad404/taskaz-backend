@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Task;
+use App\Models\User;
+use App\Models\Category;
+use Illuminate\Http\Request;
+
+class SearchController extends Controller
+{
+    /**
+     * Unified search across tasks, freelancers, and categories
+     */
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+        $limit = $request->get('limit', 5);
+
+        if (empty($query) || strlen($query) < 2) {
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'tasks' => [],
+                    'freelancers' => [],
+                    'categories' => [],
+                ],
+                'total' => 0
+            ]);
+        }
+
+        // Search Tasks
+        $tasks = Task::where('status', 'open')
+            ->where(function($q) use ($query) {
+                $q->where('title', 'like', '%' . $query . '%')
+                  ->orWhere('description', 'like', '%' . $query . '%');
+            })
+            ->with(['client', 'category'])
+            ->limit($limit)
+            ->get(['id', 'user_id', 'category_id', 'title', 'description', 'budget_type', 'budget_amount', 'location', 'is_remote', 'created_at']);
+
+        // Search Freelancers
+        $freelancers = User::whereIn('type', ['freelancer', 'both'])
+            ->where('status', 'active')
+            ->where(function($q) use ($query) {
+                $q->where('name', 'like', '%' . $query . '%')
+                  ->orWhere('bio', 'like', '%' . $query . '%')
+                  ->orWhere('location', 'like', '%' . $query . '%');
+            })
+            ->withCount(['receivedReviews as total_reviews'])
+            ->withAvg('receivedReviews as average_rating', 'rating')
+            ->limit($limit)
+            ->get(['id', 'name', 'avatar', 'bio', 'location']);
+
+        // Round average rating
+        $freelancers->each(function($freelancer) {
+            if ($freelancer->average_rating) {
+                $freelancer->average_rating = round($freelancer->average_rating, 1);
+            }
+        });
+
+        // Search Categories
+        $categories = Category::where('is_active', true)
+            ->where('name', 'like', '%' . $query . '%')
+            ->limit($limit)
+            ->get(['id', 'name', 'slug', 'icon']);
+
+        $total = $tasks->count() + $freelancers->count() + $categories->count();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'tasks' => $tasks,
+                'freelancers' => $freelancers,
+                'categories' => $categories,
+            ],
+            'total' => $total
+        ]);
+    }
+}

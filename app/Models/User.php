@@ -20,6 +20,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'slug',
         'email',
         'password',
         'phone',
@@ -37,6 +38,12 @@ class User extends Authenticatable
         'locale',
         'is_admin',
         'role',
+        'type',
+        'bio',
+        'location',
+        'status',
+        'email_verified_at',
+        'phone_verified_at',
     ];
 
     /**
@@ -69,19 +76,91 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the user's personal alerts.
+     * Get tasks posted by this user (as client).
      */
-    public function personalAlerts()
+    public function postedTasks()
     {
-        return $this->hasMany(PersonalAlert::class);
+        return $this->hasMany(Task::class);
     }
 
     /**
-     * Get the user's alert history.
+     * Get applications submitted by this user (as freelancer).
      */
-    public function alertHistory()
+    public function applications()
     {
-        return $this->hasMany(AlertHistory::class);
+        return $this->hasMany(Application::class);
+    }
+
+    /**
+     * Get contracts where this user is the client.
+     */
+    public function clientContracts()
+    {
+        return $this->hasMany(Contract::class, 'client_id');
+    }
+
+    /**
+     * Get contracts where this user is the freelancer.
+     */
+    public function freelancerContracts()
+    {
+        return $this->hasMany(Contract::class, 'freelancer_id');
+    }
+
+    /**
+     * Get reviews written by this user.
+     */
+    public function writtenReviews()
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    /**
+     * Get reviews received by this user.
+     */
+    public function receivedReviews()
+    {
+        return $this->hasMany(Review::class, 'reviewed_id');
+    }
+
+    /**
+     * Get messages sent by this user.
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    /**
+     * Get messages received by this user.
+     */
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+    /**
+     * Get average rating from reviews.
+     */
+    public function getAverageRating()
+    {
+        return $this->receivedReviews()->avg('rating');
+    }
+
+    /**
+     * Check if user is a client.
+     */
+    public function isClient(): bool
+    {
+        return in_array($this->type, ['client', 'both']);
+    }
+
+    /**
+     * Check if user is a freelancer.
+     */
+    public function isFreelancer(): bool
+    {
+        return in_array($this->type, ['freelancer', 'both']);
     }
 
     /**

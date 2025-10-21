@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3007', 'http://localhost:4007', 'http://localhost:5174', 'http://localhost:5173', 'http://localhost:5175', 'http://100.89.150.50:3000', 'http://100.89.150.50:3007', 'http://100.89.150.50:4007', 'http://100.89.150.50:5174', 'https://kredit.az', 'https://www.kredit.az', 'https://task.az', 'https://www.task.az'],
+    'allowed_origins' => ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3007', 'http://localhost:3008', 'http://localhost:4007', 'http://localhost:5174', 'http://localhost:5173', 'http://localhost:5175', 'http://100.89.150.50:3000', 'http://100.89.150.50:3007', 'http://100.89.150.50:3008', 'http://100.89.150.50:4007', 'http://100.89.150.50:5174', 'http://192.168.1.152:3000', 'http://192.168.1.152:3008', 'https://kredit.az', 'https://www.kredit.az', 'https://task.az', 'https://www.task.az'],
 
     'allowed_origins_patterns' => [],
 

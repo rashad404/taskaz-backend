@@ -42,8 +42,19 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Generate unique slug from name
+        $baseSlug = Str::slug($request->name);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (User::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
         $user = User::create([
             'name' => $request->name,
+            'slug' => $slug,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'provider' => 'email',
@@ -193,9 +204,21 @@ class AuthController extends Controller
         $user = User::where('phone', $phone)->first();
 
         if (!$user) {
+            // Generate unique slug from name
+            $baseName = $request->name ?? 'User';
+            $baseSlug = Str::slug($baseName);
+            $slug = $baseSlug;
+            $counter = 1;
+
+            while (User::where('slug', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+
             $user = User::create([
                 'phone' => $phone,
-                'name' => $request->name ?? 'User',
+                'name' => $baseName,
+                'slug' => $slug,
                 'provider' => 'phone',
                 'phone_verified_at' => now(),
                 'locale' => $request->locale ?? 'az',
@@ -422,8 +445,19 @@ class AuthController extends Controller
             ->first();
 
         if (!$user) {
+            // Generate unique slug from name
+            $baseSlug = Str::slug($socialUser->getName());
+            $slug = $baseSlug;
+            $counter = 1;
+
+            while (User::where('slug', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+
             $user = User::create([
                 'name' => $socialUser->getName(),
+                'slug' => $slug,
                 'email' => $socialUser->getEmail(),
                 'avatar' => $socialUser->getAvatar(),
                 $provider . '_id' => $socialUser->getId(),

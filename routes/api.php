@@ -5,6 +5,15 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LanguageController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\ApplicationController;
+use App\Http\Controllers\Api\ContractController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\SearchController;
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -36,10 +45,55 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'me']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // Tasks
+    Route::post('/tasks', [TaskController::class, 'store']);
+    Route::put('/tasks/{id}', [TaskController::class, 'update']);
+    Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
+    Route::get('/my-tasks', [TaskController::class, 'myTasks']);
+
+    // Applications
+    Route::post('/applications', [ApplicationController::class, 'store']);
+    Route::get('/my-applications', [ApplicationController::class, 'myApplications']);
+    Route::post('/applications/{id}/accept', [ApplicationController::class, 'accept']);
+    Route::post('/applications/{id}/reject', [ApplicationController::class, 'reject']);
+
+    // Contracts
+    Route::get('/contracts', [ContractController::class, 'index']);
+    Route::get('/contracts/{id}', [ContractController::class, 'show']);
+    Route::post('/contracts/{id}/complete', [ContractController::class, 'complete']);
+    Route::post('/contracts/{id}/cancel', [ContractController::class, 'cancel']);
+
+    // Payments
+    Route::get('/payments', [PaymentController::class, 'index']);
+    Route::post('/payments', [PaymentController::class, 'store']);
+    Route::get('/payments/{id}', [PaymentController::class, 'show']);
+    Route::post('/payments/{id}/confirm-client', [PaymentController::class, 'confirmByClient']);
+    Route::post('/payments/{id}/confirm-freelancer', [PaymentController::class, 'confirmByFreelancer']);
+
+    // Reviews
+    Route::post('/reviews', [ReviewController::class, 'store']);
+
+    // Messages
+    Route::get('/tasks/{taskId}/messages', [MessageController::class, 'index']);
+    Route::post('/messages', [MessageController::class, 'store']);
+    Route::get('/messages/unread-count', [MessageController::class, 'unreadCount']);
+    Route::get('/conversations', [MessageController::class, 'conversations']);
 });
 
 // Languages (public)
 Route::get('/languages', [LanguageController::class, 'index']);
+
+// Public Marketplace Routes
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
+Route::get('/tasks', [TaskController::class, 'index']);
+Route::get('/tasks/{id}', [TaskController::class, 'show']);
+Route::get('/freelancers', [UserController::class, 'index']);
+Route::get('/freelancers/{identifier}', [UserController::class, 'show']);
+Route::get('/users/{userId}/reviews', [ReviewController::class, 'userReviews']);
+Route::get('/top-freelancers', [UserController::class, 'topFreelancers']);
+Route::get('/search', [SearchController::class, 'search']);
 
 // Simple hello world endpoint
 Route::get('/hello', function () {
