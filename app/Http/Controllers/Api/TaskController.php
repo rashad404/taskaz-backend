@@ -83,7 +83,36 @@ class TaskController extends Controller
             'location' => 'nullable|string|max:255',
             'is_remote' => 'boolean',
             'deadline' => 'nullable|date|after:today',
+            'attachments.*' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx',
         ]);
+
+        // Handle file uploads
+        $uploadedFiles = [];
+        if ($request->hasFile('attachments')) {
+            $uploadPath = 'uploads/tasks';
+
+            // Create directory if it doesn't exist
+            if (!file_exists(public_path($uploadPath))) {
+                mkdir(public_path($uploadPath), 0755, true);
+            }
+
+            foreach ($request->file('attachments') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+                $filename = time() . '_' . uniqid() . '.' . $extension;
+
+                // Move file to public directory
+                $file->move(public_path($uploadPath), $filename);
+
+                $uploadedFiles[] = [
+                    'filename' => $filename,
+                    'original_name' => $originalName,
+                    'path' => $uploadPath . '/' . $filename,
+                    'size' => $file->getSize(),
+                    'type' => $file->getMimeType(),
+                ];
+            }
+        }
 
         // Generate unique slug from title
         $baseSlug = Str::slug($validated['title']);
@@ -99,6 +128,7 @@ class TaskController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['status'] = 'open';
         $validated['views_count'] = 0;
+        $validated['attachments'] = !empty($uploadedFiles) ? $uploadedFiles : null;
 
         $task = Task::create($validated);
 

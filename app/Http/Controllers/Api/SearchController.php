@@ -38,7 +38,7 @@ class SearchController extends Controller
             })
             ->with(['client', 'category'])
             ->limit($limit)
-            ->get(['id', 'user_id', 'category_id', 'title', 'description', 'budget_type', 'budget_amount', 'location', 'is_remote', 'created_at']);
+            ->get(['id', 'slug', 'user_id', 'category_id', 'title', 'description', 'budget_type', 'budget_amount', 'location', 'is_remote', 'created_at']);
 
         // Search Freelancers
         $freelancers = User::whereIn('type', ['freelancer', 'both'])
@@ -51,7 +51,7 @@ class SearchController extends Controller
             ->withCount(['receivedReviews as total_reviews'])
             ->withAvg('receivedReviews as average_rating', 'rating')
             ->limit($limit)
-            ->get(['id', 'name', 'avatar', 'bio', 'location']);
+            ->get(['id', 'slug', 'name', 'avatar', 'bio', 'location']);
 
         // Round average rating
         $freelancers->each(function($freelancer) {

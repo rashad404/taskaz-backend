@@ -14,6 +14,7 @@ class Task extends Model
         'slug',
         'title',
         'description',
+        'attachments',
         'budget_type',
         'budget_amount',
         'location',
@@ -28,6 +29,7 @@ class Task extends Model
         'is_remote' => 'boolean',
         'deadline' => 'datetime',
         'views_count' => 'integer',
+        'attachments' => 'array',
     ];
 
     // Relationships

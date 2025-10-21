@@ -148,4 +148,104 @@ class UserController extends Controller
             'data' => $freelancers
         ]);
     }
+
+    /**
+     * List all clients with filters and pagination.
+     */
+    public function indexClients(Request $request)
+    {
+        $query = User::whereIn('type', ['client', 'both'])
+            ->where('status', 'active');
+
+        // Apply filters
+        if ($request->has('location') && $request->location) {
+            $query->where('location', 'like', '%' . $request->location . '%');
+        }
+
+        if ($request->has('search') && $request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('bio', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Add stats
+        $query->withCount(['writtenReviews as total_reviews'])
+              ->withCount(['postedTasks as total_tasks'])
+              ->withCount(['clientContracts as total_contracts']);
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        if ($sortBy === 'total_tasks') {
+            $query->orderBy('total_tasks', $sortOrder);
+        } elseif ($sortBy === 'total_contracts') {
+            $query->orderBy('total_contracts', $sortOrder);
+        } elseif ($sortBy === 'created_at') {
+            $query->orderBy('created_at', $sortOrder);
+        } else {
+            $query->orderBy('created_at', $sortOrder);
+        }
+
+        // Pagination
+        $perPage = $request->get('per_page', 20);
+        $clients = $query->paginate($perPage);
+
+        // Add slug to response
+        $clients->getCollection()->transform(function($client) {
+            $client->slug = $client->slug;
+            return $client;
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $clients
+        ]);
+    }
+
+    /**
+     * Show client profile by slug or ID.
+     */
+    public function showClient($identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        if (is_numeric($identifier)) {
+            $user = User::whereIn('type', ['client', 'both'])
+                ->where('status', 'active')
+                ->findOrFail($identifier);
+        } else {
+            $user = User::whereIn('type', ['client', 'both'])
+                ->where('status', 'active')
+                ->where('slug', $identifier)
+                ->firstOrFail();
+        }
+
+        // Load related data
+        $user->load([
+            'writtenReviews' => function($query) {
+                $query->with(['reviewed', 'contract.task'])
+                      ->latest()
+                      ->limit(10);
+            },
+            'postedTasks' => function($query) {
+                $query->where('status', 'open')
+                      ->latest()
+                      ->limit(5);
+            }
+        ]);
+
+        // Calculate stats
+        $user->total_reviews_written = $user->writtenReviews()->count();
+        $user->total_tasks = $user->postedTasks()->count();
+        $user->total_contracts = $user->clientContracts()->count();
+        $user->completed_contracts = $user->clientContracts()
+            ->where('status', 'completed')
+            ->count();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $user
+        ]);
+    }
 }

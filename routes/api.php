@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // User Profile
     Route::get('/user', [AuthController::class, 'me']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
+    Route::post('/user/change-password', [AuthController::class, 'changePassword']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     // Tasks
@@ -91,6 +92,8 @@ Route::get('/tasks', [TaskController::class, 'index']);
 Route::get('/tasks/{id}', [TaskController::class, 'show']);
 Route::get('/freelancers', [UserController::class, 'index']);
 Route::get('/freelancers/{identifier}', [UserController::class, 'show']);
+Route::get('/clients', [UserController::class, 'indexClients']);
+Route::get('/clients/{identifier}', [UserController::class, 'showClient']);
 Route::get('/users/{userId}/reviews', [ReviewController::class, 'userReviews']);
 Route::get('/top-freelancers', [UserController::class, 'topFreelancers']);
 Route::get('/search', [SearchController::class, 'search']);
