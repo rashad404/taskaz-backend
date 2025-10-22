@@ -19,9 +19,9 @@ class TaskMarketplaceSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create freelancers
-        $freelancers = [];
-        $freelancerData = [
+        // Create professionals
+        $professionals = [];
+        $professionalData = [
             ['name' => 'Əli Məmmədov', 'email' => 'ali@example.com', 'location' => 'Bakı', 'bio' => '5+ il təcrübəyə malik veb proqramçı. Laravel və React üzrə mütəxəssis.'],
             ['name' => 'Leyla Həsənova', 'email' => 'leyla@example.com', 'location' => 'Bakı', 'bio' => 'Peşəkar UI/UX dizayner. Müasir veb tətbiqlər üzrə ixtisaslaşıb.'],
             ['name' => 'Ramil Quliyev', 'email' => 'ramil@example.com', 'location' => 'Gəncə', 'bio' => 'Mobil tətbiq tərtibatçısı. React Native və Flutter üzrə ekspert.'],
@@ -30,17 +30,23 @@ class TaskMarketplaceSeeder extends Seeder
             ['name' => 'Günay Məhərrəmova', 'email' => 'gunay@example.com', 'location' => 'Bakı', 'bio' => 'Qrafik dizayner və brend identifikasiyası eksperti. Yaradıcı həllər.'],
         ];
 
-        foreach ($freelancerData as $data) {
-            $freelancers[] = User::create([
+        foreach ($professionalData as $data) {
+            $professionals[] = User::create([
                 'name' => $data['name'],
                 'slug' => Str::slug($data['name']),
                 'email' => $data['email'],
                 'password' => Hash::make('password'),
-                'type' => 'freelancer',
+                'type' => 'professional',
                 'location' => $data['location'],
                 'bio' => $data['bio'],
                 'status' => 'active',
                 'email_verified_at' => now(),
+                // Professional status fields
+                'professional_status' => 'approved',
+                'professional_application_date' => now()->subDays(rand(30, 60)),
+                'professional_approved_at' => now()->subDays(rand(1, 29)),
+                'hourly_rate' => rand(15, 50),
+                'skills' => ['Laravel', 'React', 'JavaScript', 'PHP'],
             ]);
         }
 
@@ -186,12 +192,12 @@ class TaskMarketplaceSeeder extends Seeder
         foreach ($openTasks as $task) {
             // Each task gets 2-4 applications
             $numApplications = rand(2, 4);
-            $selectedFreelancers = collect($freelancers)->random($numApplications);
+            $selectedprofessionals = collect($professionals)->random($numApplications);
 
-            foreach ($selectedFreelancers as $freelancer) {
+            foreach ($selectedprofessionals as $professional) {
                 Application::create([
                     'task_id' => $task->id,
-                    'user_id' => $freelancer->id,
+                    'user_id' => $professional->id,
                     'proposed_amount' => $task->budget_type === 'fixed'
                         ? $task->budget_amount * (rand(80, 120) / 100)
                         : $task->budget_amount * (rand(80, 120) / 100),
@@ -206,13 +212,13 @@ class TaskMarketplaceSeeder extends Seeder
         // Create completed contracts with reviews
         $completedTask = collect($tasks)->where('status', 'assigned')->first();
         if ($completedTask) {
-            $freelancer = $freelancers[0];
+            $professional = $professionals[0];
             $client = User::find($completedTask->user_id);
 
             // Create application
             $application = Application::create([
                 'task_id' => $completedTask->id,
-                'user_id' => $freelancer->id,
+                'user_id' => $professional->id,
                 'proposed_amount' => $completedTask->budget_amount,
                 'message' => "Bu layihədə sizə kömək edə bilərəm! Təcrübəm və bacarıqlarım kifayətdir.",
                 'estimated_days' => 14,
@@ -225,7 +231,7 @@ class TaskMarketplaceSeeder extends Seeder
                 'task_id' => $completedTask->id,
                 'application_id' => $application->id,
                 'client_id' => $client->id,
-                'freelancer_id' => $freelancer->id,
+                'professional_id' => $professional->id,
                 'final_amount' => $completedTask->budget_amount,
                 'status' => 'completed',
                 'started_at' => now()->subDays(20),
@@ -237,27 +243,27 @@ class TaskMarketplaceSeeder extends Seeder
             Review::create([
                 'contract_id' => $contract->id,
                 'reviewer_id' => $client->id,
-                'reviewed_id' => $freelancer->id,
+                'reviewed_id' => $professional->id,
                 'rating' => 5,
                 'comment' => 'Əla iş! Çox professional və vaxtında təhvil verildi. Tövsiyə edirəm.',
-                'type' => 'client_to_freelancer',
+                'type' => 'client_to_professional',
                 'created_at' => now()->subDays(4),
             ]);
 
             Review::create([
                 'contract_id' => $contract->id,
-                'reviewer_id' => $freelancer->id,
+                'reviewer_id' => $professional->id,
                 'reviewed_id' => $client->id,
                 'rating' => 5,
                 'comment' => 'Əla müştəri. Aydın tələblər və vaxtında ödəniş. Təşəkkürlər.',
-                'type' => 'freelancer_to_client',
+                'type' => 'professional_to_client',
                 'created_at' => now()->subDays(4),
             ]);
         }
 
-        // Create additional completed contracts for other freelancers
-        for ($i = 1; $i < min(count($freelancers), 4); $i++) {
-            $freelancer = $freelancers[$i];
+        // Create additional completed contracts for other professionals
+        for ($i = 1; $i < min(count($professionals), 4); $i++) {
+            $professional = $professionals[$i];
             $client = $clients[array_rand($clients)];
             $category = $categories->random();
 
@@ -277,7 +283,7 @@ class TaskMarketplaceSeeder extends Seeder
 
             $dummyApplication = Application::create([
                 'task_id' => $dummyTask->id,
-                'user_id' => $freelancer->id,
+                'user_id' => $professional->id,
                 'proposed_amount' => $dummyTask->budget_amount,
                 'message' => 'Application message',
                 'status' => 'accepted',
@@ -288,7 +294,7 @@ class TaskMarketplaceSeeder extends Seeder
                 'task_id' => $dummyTask->id,
                 'application_id' => $dummyApplication->id,
                 'client_id' => $client->id,
-                'freelancer_id' => $freelancer->id,
+                'professional_id' => $professional->id,
                 'final_amount' => $dummyTask->budget_amount,
                 'status' => 'completed',
                 'started_at' => now()->subDays(rand(25, 85)),
@@ -302,15 +308,15 @@ class TaskMarketplaceSeeder extends Seeder
             Review::create([
                 'contract_id' => $dummyContract->id,
                 'reviewer_id' => $client->id,
-                'reviewed_id' => $freelancer->id,
+                'reviewed_id' => $professional->id,
                 'rating' => $rating,
                 'comment' => 'Yaxşı iş. Yenidən işə götürərdim.',
-                'type' => 'client_to_freelancer',
+                'type' => 'client_to_professional',
             ]);
         }
 
         $this->command->info('✅ Marketplace data seeded successfully!');
-        $this->command->info("   - " . count($freelancers) . " freelancers created");
+        $this->command->info("   - " . count($professionals) . " professionals created");
         $this->command->info("   - " . count($clients) . " clients created");
         $this->command->info("   - " . count($tasks) . " tasks created");
         $this->command->info("   - Applications and reviews added");
