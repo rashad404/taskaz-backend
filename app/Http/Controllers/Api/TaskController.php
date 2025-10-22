@@ -113,8 +113,8 @@ class TaskController extends Controller
                 $uploadedFiles[] = [
                     'filename' => $filename,
                     'original_name' => $originalName,
-                    'path' => 'storage/' . $path,
-                    'url' => asset('storage/' . $path),
+                    'path' => $path,
+                    'url' => Storage::disk('public')->url($path),
                     'size' => $file->getSize(),
                     'type' => $file->getMimeType(),
                 ];
