@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class TaskController extends Controller
@@ -101,25 +102,19 @@ class TaskController extends Controller
         // Handle file uploads
         $uploadedFiles = [];
         if ($request->hasFile('attachments')) {
-            $uploadPath = 'uploads/tasks';
-
-            // Create directory if it doesn't exist
-            if (!file_exists(public_path($uploadPath))) {
-                mkdir(public_path($uploadPath), 0755, true);
-            }
-
             foreach ($request->file('attachments') as $file) {
                 $originalName = $file->getClientOriginalName();
                 $extension = $file->getClientOriginalExtension();
                 $filename = time() . '_' . uniqid() . '.' . $extension;
 
-                // Move file to public directory
-                $file->move(public_path($uploadPath), $filename);
+                // Store file in storage/app/public/tasks
+                $path = $file->storeAs('tasks', $filename, 'public');
 
                 $uploadedFiles[] = [
                     'filename' => $filename,
                     'original_name' => $originalName,
-                    'path' => $uploadPath . '/' . $filename,
+                    'path' => 'storage/' . $path,
+                    'url' => asset('storage/' . $path),
                     'size' => $file->getSize(),
                     'type' => $file->getMimeType(),
                 ];
