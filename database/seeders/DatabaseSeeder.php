@@ -29,6 +29,12 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
         ]);
 
+        // Seed cities and neighborhoods
+        $this->call([
+            CitiesSeeder::class,
+            NeighborhoodsSeeder::class,
+        ]);
+
         // Create test user
         User::factory()->create([
             'name' => 'Test User',

@@ -18,6 +18,8 @@ class Task extends Model
         'budget_type',
         'budget_amount',
         'location',
+        'city_id',
+        'neighborhood_id',
         'is_remote',
         'status',
         'deadline',
@@ -56,6 +58,16 @@ class Task extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function neighborhood(): BelongsTo
+    {
+        return $this->belongsTo(Neighborhood::class);
     }
 
     // Helper methods

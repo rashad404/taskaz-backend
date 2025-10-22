@@ -15,7 +15,7 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Task::with(['client', 'category'])
+        $query = Task::with(['client', 'category', 'city', 'neighborhood'])
             ->where('status', 'open');
 
         // Filter by category (supports both ID and slug)
@@ -41,6 +41,16 @@ class TaskController extends Controller
         // Filter by location or remote
         if ($request->has('is_remote')) {
             $query->where('is_remote', $request->boolean('is_remote'));
+        }
+
+        // Filter by city
+        if ($request->has('city_id')) {
+            $query->where('city_id', $request->city_id);
+        }
+
+        // Filter by neighborhood
+        if ($request->has('neighborhood_id')) {
+            $query->where('neighborhood_id', $request->neighborhood_id);
         }
 
         if ($request->has('location')) {
@@ -81,6 +91,8 @@ class TaskController extends Controller
             'budget_type' => 'required|in:fixed,hourly',
             'budget_amount' => 'nullable|numeric|min:0',
             'location' => 'nullable|string|max:255',
+            'city_id' => 'nullable|exists:cities,id',
+            'neighborhood_id' => 'nullable|exists:neighborhoods,id',
             'is_remote' => 'boolean',
             'deadline' => 'nullable|date|after:today',
             'attachments.*' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx',

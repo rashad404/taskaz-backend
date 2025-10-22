@@ -41,6 +41,8 @@ class User extends Authenticatable
         'type',
         'bio',
         'location',
+        'city_id',
+        'neighborhood_id',
         'status',
         'email_verified_at',
         'phone_verified_at',
@@ -73,6 +75,22 @@ class User extends Authenticatable
             'is_admin' => 'boolean',
             'notification_preferences' => 'array',
         ];
+    }
+
+    /**
+     * Get city relation.
+     */
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    /**
+     * Get neighborhood relation.
+     */
+    public function neighborhood()
+    {
+        return $this->belongsTo(Neighborhood::class);
     }
 
     /**
