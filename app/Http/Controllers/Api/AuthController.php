@@ -513,6 +513,8 @@ class AuthController extends Controller
             'email' => 'string|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'string|nullable|regex:/^\+994[0-9]{9}$/|unique:users,phone,' . $user->id,
             'location' => 'string|nullable|max:255',
+            'city_id' => 'nullable|exists:cities,id',
+            'neighborhood_id' => 'nullable|exists:neighborhoods,id',
             'bio' => 'string|nullable|max:1000',
             'avatar' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
             'telegram_chat_id' => 'string|nullable',
@@ -538,6 +540,8 @@ class AuthController extends Controller
             'email',
             'phone',
             'location',
+            'city_id',
+            'neighborhood_id',
             'bio',
             'telegram_chat_id',
             'whatsapp_number',

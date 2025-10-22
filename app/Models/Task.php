@@ -65,9 +65,19 @@ class Task extends Model
         return $this->belongsTo(City::class);
     }
 
-    public function neighborhood(): BelongsTo
+    public function district(): BelongsTo
     {
-        return $this->belongsTo(Neighborhood::class);
+        return $this->belongsTo(District::class);
+    }
+
+    public function settlement(): BelongsTo
+    {
+        return $this->belongsTo(Settlement::class);
+    }
+
+    public function metroStation(): BelongsTo
+    {
+        return $this->belongsTo(MetroStation::class);
     }
 
     // Helper methods

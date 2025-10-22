@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Neighborhood extends Model
+class District extends Model
 {
+    protected $table = 'districts';
+
     protected $fillable = [
         'city_id',
         'name_az',
@@ -25,6 +27,11 @@ class Neighborhood extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function settlements(): HasMany
+    {
+        return $this->hasMany(Settlement::class)->orderBy('sort_order');
     }
 
     public function tasks(): HasMany

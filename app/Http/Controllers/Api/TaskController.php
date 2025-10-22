@@ -15,7 +15,7 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Task::with(['client', 'category', 'city', 'neighborhood'])
+        $query = Task::with(['client', 'category', 'city'])
             ->where('status', 'open');
 
         // Filter by category (supports both ID and slug)
@@ -147,7 +147,7 @@ class TaskController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Task created successfully',
-            'data' => $task->load(['client', 'category'])
+            'data' => $task->load(['client', 'category', 'city'])
         ], 201);
     }
 
@@ -162,6 +162,7 @@ class TaskController extends Controller
             $task = Task::with([
                 'client',
                 'category',
+                'city',
                 'applications' => function($query) {
                     $query->where('status', 'pending')
                           ->with('freelancer')
@@ -172,6 +173,7 @@ class TaskController extends Controller
             $task = Task::with([
                 'client',
                 'category',
+                'city',
                 'applications' => function($query) {
                     $query->where('status', 'pending')
                           ->with('freelancer')
@@ -219,6 +221,8 @@ class TaskController extends Controller
             'budget_type' => 'sometimes|in:fixed,hourly',
             'budget_amount' => 'nullable|numeric|min:0',
             'location' => 'nullable|string|max:255',
+            'city_id' => 'nullable|exists:cities,id',
+            'neighborhood_id' => 'nullable|exists:neighborhoods,id',
             'is_remote' => 'boolean',
             'deadline' => 'nullable|date|after:today',
         ]);
@@ -228,7 +232,7 @@ class TaskController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Task updated successfully',
-            'data' => $task->load(['client', 'category'])
+            'data' => $task->load(['client', 'category', 'city'])
         ]);
     }
 

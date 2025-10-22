@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\DistrictController;
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -87,9 +88,11 @@ Route::middleware('auth:sanctum')->group(function () {
 // Languages (public)
 Route::get('/languages', [LanguageController::class, 'index']);
 
-// Cities and Neighborhoods (public)
+// Cities, Districts, Settlements, and Metro Stations (public)
 Route::get('/cities', [CityController::class, 'index']);
-Route::get('/cities/{id}/neighborhoods', [CityController::class, 'neighborhoods']);
+Route::get('/cities/{id}/districts', [CityController::class, 'districts']);
+Route::get('/cities/{id}/metro-stations', [CityController::class, 'metroStations']);
+Route::get('/districts/{id}/settlements', [DistrictController::class, 'settlements']);
 
 // Public Marketplace Routes
 Route::get('/categories', [CategoryController::class, 'index']);

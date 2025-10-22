@@ -88,9 +88,19 @@ class User extends Authenticatable
     /**
      * Get neighborhood relation.
      */
-    public function neighborhood()
+    public function district()
     {
-        return $this->belongsTo(Neighborhood::class);
+        return $this->belongsTo(District::class);
+    }
+
+    public function settlement()
+    {
+        return $this->belongsTo(Settlement::class);
+    }
+
+    public function metroStation()
+    {
+        return $this->belongsTo(MetroStation::class);
     }
 
     /**

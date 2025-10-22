@@ -29,10 +29,12 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
         ]);
 
-        // Seed cities and neighborhoods
+        // Seed cities, districts, settlements, and metro stations
         $this->call([
             CitiesSeeder::class,
-            NeighborhoodsSeeder::class,
+            DistrictsSeeder::class,
+            SettlementsSeeder::class,
+            MetroStationsSeeder::class,
         ]);
 
         // Create test user

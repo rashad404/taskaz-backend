@@ -24,11 +24,11 @@ class CityController extends Controller
     }
 
     /**
-     * Get neighborhoods for a specific city
+     * Get districts for a specific city
      */
-    public function neighborhoods($id)
+    public function districts($id)
     {
-        $city = City::with(['neighborhoods' => function ($query) {
+        $city = City::with(['districts' => function ($query) {
             $query->orderBy('sort_order')
                 ->orderBy('name_az')
                 ->select('id', 'city_id', 'name_az', 'name_en', 'name_ru', 'sort_order');
@@ -43,7 +43,31 @@ class CityController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $city->neighborhoods
+            'data' => $city->districts
+        ]);
+    }
+
+    /**
+     * Get metro stations for a specific city
+     */
+    public function metroStations($id)
+    {
+        $city = City::with(['metroStations' => function ($query) {
+            $query->orderBy('sort_order')
+                ->orderBy('name_az')
+                ->select('id', 'city_id', 'name_az', 'name_en', 'name_ru', 'sort_order');
+        }])->find($id);
+
+        if (!$city) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'City not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $city->metroStations
         ]);
     }
 }

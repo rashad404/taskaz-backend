@@ -3,32 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class City extends Model
+class MetroStation extends Model
 {
     protected $fillable = [
+        'city_id',
         'name_az',
         'name_en',
         'name_ru',
-        'has_neighborhoods',
         'sort_order',
     ];
 
     protected $casts = [
-        'has_neighborhoods' => 'boolean',
+        'city_id' => 'integer',
         'sort_order' => 'integer',
     ];
 
     // Relationships
-    public function districts(): HasMany
+    public function city(): BelongsTo
     {
-        return $this->hasMany(District::class)->orderBy('sort_order');
-    }
-
-    public function metroStations(): HasMany
-    {
-        return $this->hasMany(MetroStation::class)->orderBy('sort_order');
+        return $this->belongsTo(City::class);
     }
 
     public function tasks(): HasMany
