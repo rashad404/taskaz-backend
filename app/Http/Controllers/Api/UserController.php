@@ -14,7 +14,8 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::whereIn('type', ['freelancer', 'both'])
-            ->where('status', 'active');
+            ->where('status', 'active')
+            ->where('professional_status', 'approved');
 
         // Apply filters
         if ($request->has('location') && $request->location) {
@@ -86,10 +87,12 @@ class UserController extends Controller
         if (is_numeric($identifier)) {
             $user = User::whereIn('type', ['freelancer', 'both'])
                 ->where('status', 'active')
+                ->where('professional_status', 'approved')
                 ->findOrFail($identifier);
         } else {
             $user = User::whereIn('type', ['freelancer', 'both'])
                 ->where('status', 'active')
+                ->where('professional_status', 'approved')
                 ->where('slug', $identifier)
                 ->firstOrFail();
         }
@@ -125,6 +128,7 @@ class UserController extends Controller
 
         $freelancers = User::whereIn('type', ['freelancer', 'both'])
             ->where('status', 'active')
+            ->where('professional_status', 'approved')
             ->withCount(['receivedReviews as total_reviews'])
             ->withAvg('receivedReviews as average_rating', 'rating')
             ->withCount(['freelancerContracts as completed_contracts' => function($query) {

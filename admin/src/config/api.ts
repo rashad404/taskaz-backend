@@ -12,7 +12,7 @@ export const API_CONFIG = {
   getStorageUrl: (path: string) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
-    // Remove /api from the end of URL, not from domain (e.g., api.kredit.az)
+    // Remove /api from the end of URL, not from domain (e.g., api.task.az)
     const baseUrl = API_URL.replace(/\/api$/, '');
     return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
   },
@@ -21,7 +21,7 @@ export const API_CONFIG = {
   getImageUrl: (path: string) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
-    // Remove /api from the end of URL, not from domain (e.g., api.kredit.az)
+    // Remove /api from the end of URL, not from domain (e.g., api.task.az)
     const baseUrl = API_URL.replace(/\/api$/, '');
     return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
   }

@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\DistrictController;
+use App\Http\Controllers\Api\ProfessionalApplicationController;
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -83,6 +84,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/messages', [MessageController::class, 'store']);
     Route::get('/messages/unread-count', [MessageController::class, 'unreadCount']);
     Route::get('/conversations', [MessageController::class, 'conversations']);
+
+    // Professional Applications
+    Route::post('/professional/apply', [ProfessionalApplicationController::class, 'apply']);
+    Route::get('/professional/status', [ProfessionalApplicationController::class, 'status']);
+    Route::put('/professional/update', [ProfessionalApplicationController::class, 'update']);
+    Route::post('/professional/reapply', [ProfessionalApplicationController::class, 'reapply']);
 });
 
 // Languages (public)

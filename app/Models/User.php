@@ -46,6 +46,13 @@ class User extends Authenticatable
         'status',
         'email_verified_at',
         'phone_verified_at',
+        'hourly_rate',
+        'skills',
+        'portfolio_items',
+        'professional_status',
+        'professional_application_date',
+        'professional_approved_at',
+        'professional_rejected_reason',
     ];
 
     /**
@@ -74,6 +81,11 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'notification_preferences' => 'array',
+            'skills' => 'array',
+            'portfolio_items' => 'array',
+            'professional_application_date' => 'datetime',
+            'professional_approved_at' => 'datetime',
+            'hourly_rate' => 'decimal:2',
         ];
     }
 

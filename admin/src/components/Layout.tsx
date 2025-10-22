@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Home, FileText, LogOut, Menu, X, Mail, FolderOpen, Users, Images, Megaphone, Monitor, Building2, List } from 'lucide-react';
+import { Home, FileText, LogOut, Menu, X, Mail, FolderOpen, Users, Images, Megaphone, Monitor, Building2, List, Briefcase } from 'lucide-react';
 import { useState } from 'react';
 import { authService } from '../services/auth';
 
@@ -19,16 +19,7 @@ export default function Layout() {
 
   const menuItems = [
     { path: '/dashboard', icon: Home, label: 'Dashboard' },
-    { path: '/news', icon: FileText, label: 'News' },
-    { path: '/users', icon: Users, label: 'Users' },
-    { path: '/companies-eav', icon: Building2, label: 'Companies' },
-    { path: '/company-types', icon: List, label: 'Company Types' },
-    { path: '/news-categories', icon: FolderOpen, label: 'News Categories' },
-    { path: '/sliders', icon: Images, label: 'Homepage Slider' },
-    { path: '/hero-banners', icon: Monitor, label: 'Hero Banners' },
-    { path: '/ads', icon: Megaphone, label: 'Ads' },
-    { path: '/menus', icon: List, label: 'Menus' },
-    { path: '/subscribers', icon: Mail, label: 'Subscribers' },
+    { path: '/professionals', icon: Briefcase, label: 'Professionals' },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);

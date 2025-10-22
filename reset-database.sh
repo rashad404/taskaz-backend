@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "========================================="
-echo "Database Reset Script for kredit.az"
+echo "Database Reset Script for task.az"
 echo "========================================="
 echo ""
 echo "⚠️  WARNING: This will DROP and recreate all tables!"
