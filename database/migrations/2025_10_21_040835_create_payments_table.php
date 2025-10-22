@@ -18,14 +18,14 @@ return new class extends Migration
             $table->enum('method', ['cash', 'bank_transfer', 'online'])->default('cash');
             $table->enum('status', ['pending', 'sent', 'confirmed'])->default('pending');
             $table->boolean('client_confirmed')->default(false);
-            $table->boolean('freelancer_confirmed')->default(false);
+            $table->boolean('professional_confirmed')->default(false);
             $table->text('notes')->nullable();
             $table->string('transaction_id')->nullable(); // For future online payments
             $table->string('gateway')->nullable(); // stripe, paypal, etc.
             $table->decimal('fee_amount', 10, 2)->nullable();
             $table->decimal('net_amount', 10, 2)->nullable();
             $table->dateTime('client_confirmed_at')->nullable();
-            $table->dateTime('freelancer_confirmed_at')->nullable();
+            $table->dateTime('professional_confirmed_at')->nullable();
             $table->timestamps();
 
             $table->index(['contract_id', 'status']);

@@ -42,7 +42,7 @@ class PaymentController extends Controller
 
         $validated['status'] = 'pending';
         $validated['client_confirmed'] = false;
-        $validated['freelancer_confirmed'] = false;
+        $validated['professional_confirmed'] = false;
 
         $payment = Payment::create($validated);
 
@@ -62,7 +62,7 @@ class PaymentController extends Controller
 
         $payments = Payment::whereHas('contract', function($q) use ($user) {
             $q->where('client_id', $user->id)
-              ->orWhere('freelancer_id', $user->id);
+              ->orWhere('professional_id', $user->id);
         })
         ->with('contract')
         ->latest()
@@ -84,7 +84,7 @@ class PaymentController extends Controller
         $payment = Payment::with('contract')
             ->whereHas('contract', function($q) use ($user) {
                 $q->where('client_id', $user->id)
-                  ->orWhere('freelancer_id', $user->id);
+                  ->orWhere('professional_id', $user->id);
             })
             ->findOrFail($id);
 
@@ -127,14 +127,14 @@ class PaymentController extends Controller
     }
 
     /**
-     * Freelancer confirms payment received.
+     * professional confirms payment received.
      */
-    public function confirmByFreelancer($id)
+    public function confirmByprofessional($id)
     {
         $payment = Payment::with('contract')->findOrFail($id);
 
-        // Check if user is the freelancer
-        if ($payment->contract->freelancer_id !== Auth::id()) {
+        // Check if user is the professional
+        if ($payment->contract->professional_id !== Auth::id()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Unauthorized'
@@ -142,18 +142,18 @@ class PaymentController extends Controller
         }
 
         // Check if already confirmed
-        if ($payment->freelancer_confirmed) {
+        if ($payment->professional_confirmed) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Already confirmed by freelancer'
+                'message' => 'Already confirmed by professional'
             ], 400);
         }
 
-        $payment->confirmByFreelancer();
+        $payment->confirmByprofessional();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Payment confirmed by freelancer',
+            'message' => 'Payment confirmed by professional',
             'data' => $payment->fresh()
         ]);
     }

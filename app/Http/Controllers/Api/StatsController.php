@@ -16,8 +16,8 @@ class StatsController extends Controller
      */
     public function index()
     {
-        // Total users (clients + freelancers, excluding admins)
-        $totalUsers = User::whereIn('type', ['client', 'freelancer'])
+        // Total users (clients + professionals, excluding admins)
+        $totalUsers = User::whereIn('type', ['client', 'professional'])
             ->where('status', 'active')
             ->count();
 

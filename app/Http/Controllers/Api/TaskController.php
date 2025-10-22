@@ -165,7 +165,7 @@ class TaskController extends Controller
                 'city',
                 'applications' => function($query) {
                     $query->where('status', 'pending')
-                          ->with('freelancer')
+                          ->with('professional')
                           ->latest();
                 }
             ])->findOrFail($identifier);
@@ -176,7 +176,7 @@ class TaskController extends Controller
                 'city',
                 'applications' => function($query) {
                     $query->where('status', 'pending')
-                          ->with('freelancer')
+                          ->with('professional')
                           ->latest();
                 }
             ])->where('slug', $identifier)->firstOrFail();

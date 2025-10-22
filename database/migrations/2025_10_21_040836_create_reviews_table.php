@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('reviewed_id')->constrained('users')->onDelete('cascade');
             $table->integer('rating')->unsigned(); // 1-5
             $table->text('comment')->nullable();
-            $table->enum('type', ['client_to_freelancer', 'freelancer_to_client']);
+            $table->enum('type', ['client_to_professional', 'professional_to_client']);
             $table->timestamps();
 
             $table->index(['reviewed_id', 'rating']);

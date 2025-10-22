@@ -12,7 +12,7 @@ class Contract extends Model
         'task_id',
         'application_id',
         'client_id',
-        'freelancer_id',
+        'professional_id',
         'final_amount',
         'status',
         'started_at',
@@ -42,9 +42,9 @@ class Contract extends Model
         return $this->belongsTo(User::class, 'client_id');
     }
 
-    public function freelancer(): BelongsTo
+    public function professional(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'freelancer_id');
+        return $this->belongsTo(User::class, 'professional_id');
     }
 
     public function payments(): HasMany

@@ -74,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments', [PaymentController::class, 'store']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
     Route::post('/payments/{id}/confirm-client', [PaymentController::class, 'confirmByClient']);
-    Route::post('/payments/{id}/confirm-freelancer', [PaymentController::class, 'confirmByFreelancer']);
+    Route::post('/payments/{id}/confirm-professional', [PaymentController::class, 'confirmByprofessional']);
 
     // Reviews
     Route::post('/reviews', [ReviewController::class, 'store']);
@@ -106,12 +106,12 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/tasks', [TaskController::class, 'index']);
 Route::get('/tasks/{id}', [TaskController::class, 'show']);
-Route::get('/freelancers', [UserController::class, 'index']);
-Route::get('/freelancers/{identifier}', [UserController::class, 'show']);
+Route::get('/professionals', [UserController::class, 'index']);
+Route::get('/professionals/{identifier}', [UserController::class, 'show']);
 Route::get('/clients', [UserController::class, 'indexClients']);
 Route::get('/clients/{identifier}', [UserController::class, 'showClient']);
 Route::get('/users/{userId}/reviews', [ReviewController::class, 'userReviews']);
-Route::get('/top-freelancers', [UserController::class, 'topFreelancers']);
+Route::get('/top-professionals', [UserController::class, 'topprofessionals']);
 Route::get('/search', [SearchController::class, 'search']);
 Route::get('/stats', [StatsController::class, 'index']);
 

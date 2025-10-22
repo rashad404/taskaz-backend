@@ -34,7 +34,7 @@ class ReviewController extends Controller
         $user = Auth::user();
 
         // Check if user is part of this contract
-        if ($contract->client_id !== $user->id && $contract->freelancer_id !== $user->id) {
+        if ($contract->client_id !== $user->id && $contract->professional_id !== $user->id) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Unauthorized'
@@ -55,15 +55,15 @@ class ReviewController extends Controller
 
         // Determine reviewer and reviewed user
         if ($contract->client_id === $user->id) {
-            // Client reviewing freelancer
+            // Client reviewing professional
             $validated['reviewer_id'] = $user->id;
-            $validated['reviewed_id'] = $contract->freelancer_id;
-            $validated['type'] = 'client_to_freelancer';
+            $validated['reviewed_id'] = $contract->professional_id;
+            $validated['type'] = 'client_to_professional';
         } else {
-            // Freelancer reviewing client
+            // professional reviewing client
             $validated['reviewer_id'] = $user->id;
             $validated['reviewed_id'] = $contract->client_id;
-            $validated['type'] = 'freelancer_to_client';
+            $validated['type'] = 'professional_to_client';
         }
 
         $review = Review::create($validated);

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class SearchController extends Controller
 {
     /**
-     * Unified search across tasks, freelancers, and categories
+     * Unified search across tasks, professionals, and categories
      */
     public function search(Request $request)
     {
@@ -23,7 +23,7 @@ class SearchController extends Controller
                 'status' => 'success',
                 'data' => [
                     'tasks' => [],
-                    'freelancers' => [],
+                    'professionals' => [],
                     'categories' => [],
                 ],
                 'total' => 0
@@ -40,8 +40,8 @@ class SearchController extends Controller
             ->limit($limit)
             ->get(['id', 'slug', 'user_id', 'category_id', 'title', 'description', 'budget_type', 'budget_amount', 'location', 'is_remote', 'created_at']);
 
-        // Search Freelancers
-        $freelancers = User::whereIn('type', ['freelancer', 'both'])
+        // Search professionals
+        $professionals = User::whereIn('type', ['professional', 'both'])
             ->where('status', 'active')
             ->where(function($q) use ($query) {
                 $q->where('name', 'like', '%' . $query . '%')
@@ -54,9 +54,9 @@ class SearchController extends Controller
             ->get(['id', 'slug', 'name', 'avatar', 'bio', 'location']);
 
         // Round average rating
-        $freelancers->each(function($freelancer) {
-            if ($freelancer->average_rating) {
-                $freelancer->average_rating = round($freelancer->average_rating, 1);
+        $professionals->each(function($professional) {
+            if ($professional->average_rating) {
+                $professional->average_rating = round($professional->average_rating, 1);
             }
         });
 
@@ -66,13 +66,13 @@ class SearchController extends Controller
             ->limit($limit)
             ->get(['id', 'name', 'slug', 'icon']);
 
-        $total = $tasks->count() + $freelancers->count() + $categories->count();
+        $total = $tasks->count() + $professionals->count() + $categories->count();
 
         return response()->json([
             'status' => 'success',
             'data' => [
                 'tasks' => $tasks,
-                'freelancers' => $freelancers,
+                'professionals' => $professionals,
                 'categories' => $categories,
             ],
             'total' => $total

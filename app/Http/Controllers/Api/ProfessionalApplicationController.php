@@ -75,7 +75,7 @@ class ProfessionalApplicationController extends Controller
             'professional_application_date' => now(),
             'professional_approved_at' => null,
             'professional_rejected_reason' => null,
-            'type' => in_array($user->type, ['freelancer', 'both']) ? $user->type : 'both',
+            'type' => in_array($user->type, ['professional', 'both']) ? $user->type : 'both',
         ]);
 
         return response()->json([

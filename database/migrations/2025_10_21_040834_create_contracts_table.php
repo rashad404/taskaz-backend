@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('task_id')->constrained()->onDelete('cascade');
             $table->foreignId('application_id')->constrained()->onDelete('cascade');
             $table->foreignId('client_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('freelancer_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('professional_id')->constrained('users')->onDelete('cascade');
             $table->decimal('final_amount', 10, 2);
             $table->enum('status', ['active', 'completed', 'cancelled'])->default('active');
             $table->dateTime('started_at')->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['client_id', 'status']);
-            $table->index(['freelancer_id', 'status']);
+            $table->index(['professional_id', 'status']);
         });
     }
 

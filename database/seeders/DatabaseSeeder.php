@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
             'type' => 'both',
         ]);
 
-        // Seed marketplace data (tasks, freelancers, applications, etc.)
+        // Seed marketplace data (tasks, professionals, applications, etc.)
         $this->call([
             TaskMarketplaceSeeder::class,
         ]);

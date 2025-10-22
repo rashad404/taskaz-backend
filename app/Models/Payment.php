@@ -13,14 +13,14 @@ class Payment extends Model
         'method',
         'status',
         'client_confirmed',
-        'freelancer_confirmed',
+        'professional_confirmed',
         'notes',
         'transaction_id',
         'gateway',
         'fee_amount',
         'net_amount',
         'client_confirmed_at',
-        'freelancer_confirmed_at',
+        'professional_confirmed_at',
     ];
 
     protected $casts = [
@@ -28,9 +28,9 @@ class Payment extends Model
         'fee_amount' => 'decimal:2',
         'net_amount' => 'decimal:2',
         'client_confirmed' => 'boolean',
-        'freelancer_confirmed' => 'boolean',
+        'professional_confirmed' => 'boolean',
         'client_confirmed_at' => 'datetime',
-        'freelancer_confirmed_at' => 'datetime',
+        'professional_confirmed_at' => 'datetime',
     ];
 
     // Relationships
@@ -42,7 +42,7 @@ class Payment extends Model
     // Helper methods
     public function isFullyConfirmed(): bool
     {
-        return $this->client_confirmed && $this->freelancer_confirmed;
+        return $this->client_confirmed && $this->professional_confirmed;
     }
 
     public function confirmByClient(): void
@@ -57,11 +57,11 @@ class Payment extends Model
         }
     }
 
-    public function confirmByFreelancer(): void
+    public function confirmByprofessional(): void
     {
         $this->update([
-            'freelancer_confirmed' => true,
-            'freelancer_confirmed_at' => now(),
+            'professional_confirmed' => true,
+            'professional_confirmed_at' => now(),
         ]);
 
         if ($this->isFullyConfirmed()) {

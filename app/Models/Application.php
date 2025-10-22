@@ -28,7 +28,7 @@ class Application extends Model
         return $this->belongsTo(Task::class);
     }
 
-    public function freelancer(): BelongsTo
+    public function professional(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

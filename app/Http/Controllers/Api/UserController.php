@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     /**
-     * List all freelancers with filters and pagination.
+     * List all professionals with filters and pagination.
      */
     public function index(Request $request)
     {
-        $query = User::whereIn('type', ['freelancer', 'both'])
+        $query = User::whereIn('type', ['professional', 'both'])
             ->where('status', 'active')
             ->where('professional_status', 'approved');
 
@@ -32,7 +32,7 @@ class UserController extends Controller
         // Add stats
         $query->withCount(['receivedReviews as total_reviews'])
               ->withAvg('receivedReviews as average_rating', 'rating')
-              ->withCount(['freelancerContracts as completed_contracts' => function($q) {
+              ->withCount(['professionalContracts as completed_contracts' => function($q) {
                   $q->where('status', 'completed');
               }]);
 
@@ -60,37 +60,37 @@ class UserController extends Controller
 
         // Pagination
         $perPage = $request->get('per_page', 20);
-        $freelancers = $query->paginate($perPage);
+        $professionals = $query->paginate($perPage);
 
         // Round average rating to 1 decimal
-        $freelancers->getCollection()->transform(function($freelancer) {
-            if ($freelancer->average_rating) {
-                $freelancer->average_rating = round($freelancer->average_rating, 1);
+        $professionals->getCollection()->transform(function($professional) {
+            if ($professional->average_rating) {
+                $professional->average_rating = round($professional->average_rating, 1);
             }
             // Add slug to response
-            $freelancer->slug = $freelancer->slug;
-            return $freelancer;
+            $professional->slug = $professional->slug;
+            return $professional;
         });
 
         return response()->json([
             'status' => 'success',
-            'data' => $freelancers
+            'data' => $professionals
         ]);
     }
 
     /**
-     * Show freelancer profile by slug or ID.
+     * Show professional profile by slug or ID.
      */
     public function show($identifier)
     {
         // Check if identifier is numeric (ID) or string (slug)
         if (is_numeric($identifier)) {
-            $user = User::whereIn('type', ['freelancer', 'both'])
+            $user = User::whereIn('type', ['professional', 'both'])
                 ->where('status', 'active')
                 ->where('professional_status', 'approved')
                 ->findOrFail($identifier);
         } else {
-            $user = User::whereIn('type', ['freelancer', 'both'])
+            $user = User::whereIn('type', ['professional', 'both'])
                 ->where('status', 'active')
                 ->where('professional_status', 'approved')
                 ->where('slug', $identifier)
@@ -109,7 +109,7 @@ class UserController extends Controller
         // Calculate stats
         $user->total_reviews = $user->receivedReviews()->count();
         $user->average_rating = round($user->receivedReviews()->avg('rating'), 1);
-        $user->completed_contracts = $user->freelancerContracts()
+        $user->completed_contracts = $user->professionalContracts()
             ->where('status', 'completed')
             ->count();
 
@@ -120,18 +120,18 @@ class UserController extends Controller
     }
 
     /**
-     * Get top freelancers with ratings.
+     * Get top professionals with ratings.
      */
-    public function topFreelancers(Request $request)
+    public function topprofessionals(Request $request)
     {
         $limit = $request->get('limit', 6);
 
-        $freelancers = User::whereIn('type', ['freelancer', 'both'])
+        $professionals = User::whereIn('type', ['professional', 'both'])
             ->where('status', 'active')
             ->where('professional_status', 'approved')
             ->withCount(['receivedReviews as total_reviews'])
             ->withAvg('receivedReviews as average_rating', 'rating')
-            ->withCount(['freelancerContracts as completed_contracts' => function($query) {
+            ->withCount(['professionalContracts as completed_contracts' => function($query) {
                 $query->where('status', 'completed');
             }])
             ->having('total_reviews', '>', 0)
@@ -141,15 +141,15 @@ class UserController extends Controller
             ->get(['id', 'name', 'email', 'avatar', 'bio', 'location']);
 
         // Round average rating to 1 decimal
-        $freelancers->each(function($freelancer) {
-            if ($freelancer->average_rating) {
-                $freelancer->average_rating = round($freelancer->average_rating, 1);
+        $professionals->each(function($professional) {
+            if ($professional->average_rating) {
+                $professional->average_rating = round($professional->average_rating, 1);
             }
         });
 
         return response()->json([
             'status' => 'success',
-            'data' => $freelancers
+            'data' => $professionals
         ]);
     }
 

@@ -16,10 +16,10 @@ class ContractController extends Controller
     {
         $user = Auth::user();
 
-        $query = Contract::with(['task', 'client', 'freelancer', 'payments'])
+        $query = Contract::with(['task', 'client', 'professional', 'payments'])
             ->where(function($q) use ($user) {
                 $q->where('client_id', $user->id)
-                  ->orWhere('freelancer_id', $user->id);
+                  ->orWhere('professional_id', $user->id);
             });
 
         // Filter by status
@@ -42,10 +42,10 @@ class ContractController extends Controller
     {
         $user = Auth::user();
 
-        $contract = Contract::with(['task', 'client', 'freelancer', 'payments', 'reviews'])
+        $contract = Contract::with(['task', 'client', 'professional', 'payments', 'reviews'])
             ->where(function($q) use ($user) {
                 $q->where('client_id', $user->id)
-                  ->orWhere('freelancer_id', $user->id);
+                  ->orWhere('professional_id', $user->id);
             })
             ->findOrFail($id);
 
@@ -56,14 +56,14 @@ class ContractController extends Controller
     }
 
     /**
-     * Complete a contract (by freelancer).
+     * Complete a contract (by professional).
      */
     public function complete(Request $request, $id)
     {
         $contract = Contract::findOrFail($id);
 
-        // Check if user is the freelancer
-        if ($contract->freelancer_id !== Auth::id()) {
+        // Check if user is the professional
+        if ($contract->professional_id !== Auth::id()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Unauthorized'
@@ -108,7 +108,7 @@ class ContractController extends Controller
         $user = Auth::user();
 
         // Check if user is part of this contract
-        if ($contract->client_id !== $user->id && $contract->freelancer_id !== $user->id) {
+        if ($contract->client_id !== $user->id && $contract->professional_id !== $user->id) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Unauthorized'

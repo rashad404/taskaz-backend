@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('task_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Freelancer
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // professional
             $table->decimal('proposed_amount', 10, 2);
             $table->text('message');
             $table->integer('estimated_days')->nullable();
@@ -23,7 +23,7 @@ return new class extends Migration
 
             $table->index(['task_id', 'status']);
             $table->index(['user_id', 'created_at']);
-            $table->unique(['task_id', 'user_id']); // One application per freelancer per task
+            $table->unique(['task_id', 'user_id']); // One application per professional per task
         });
     }
 

@@ -54,12 +54,12 @@ class ApplicationController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Application submitted successfully',
-            'data' => $application->load(['task', 'freelancer'])
+            'data' => $application->load(['task', 'professional'])
         ], 201);
     }
 
     /**
-     * Get applications for authenticated user (as freelancer).
+     * Get applications for authenticated user (as professional).
      */
     public function myApplications(Request $request)
     {
@@ -107,7 +107,7 @@ class ApplicationController extends Controller
                 'task_id' => $application->task_id,
                 'application_id' => $application->id,
                 'client_id' => $application->task->user_id,
-                'freelancer_id' => $application->user_id,
+                'professional_id' => $application->user_id,
                 'final_amount' => $application->proposed_amount,
                 'status' => 'active',
                 'started_at' => now(),
@@ -127,7 +127,7 @@ class ApplicationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Application accepted and contract created',
-                'data' => $contract->load(['task', 'freelancer', 'client'])
+                'data' => $contract->load(['task', 'professional', 'client'])
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

@@ -124,7 +124,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Get applications submitted by this user (as freelancer).
+     * Get applications submitted by this user (as professional).
      */
     public function applications()
     {
@@ -140,11 +140,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Get contracts where this user is the freelancer.
+     * Get contracts where this user is the professional.
      */
-    public function freelancerContracts()
+    public function professionalContracts()
     {
-        return $this->hasMany(Contract::class, 'freelancer_id');
+        return $this->hasMany(Contract::class, 'professional_id');
     }
 
     /**
@@ -196,11 +196,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is a freelancer.
+     * Check if user is a professional.
      */
-    public function isFreelancer(): bool
+    public function isprofessional(): bool
     {
-        return in_array($this->type, ['freelancer', 'both']);
+        return in_array($this->type, ['professional', 'both']);
     }
 
     /**
