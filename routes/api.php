@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\StatsController;
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -97,6 +98,7 @@ Route::get('/clients/{identifier}', [UserController::class, 'showClient']);
 Route::get('/users/{userId}/reviews', [ReviewController::class, 'userReviews']);
 Route::get('/top-freelancers', [UserController::class, 'topFreelancers']);
 Route::get('/search', [SearchController::class, 'search']);
+Route::get('/stats', [StatsController::class, 'index']);
 
 // Simple hello world endpoint
 Route::get('/hello', function () {

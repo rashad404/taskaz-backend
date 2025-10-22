@@ -511,7 +511,10 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:255',
             'email' => 'string|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'string|regex:/^\+994[0-9]{9}$/|unique:users,phone,' . $user->id,
+            'phone' => 'string|nullable|regex:/^\+994[0-9]{9}$/|unique:users,phone,' . $user->id,
+            'location' => 'string|nullable|max:255',
+            'bio' => 'string|nullable|max:1000',
+            'avatar' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
             'telegram_chat_id' => 'string|nullable',
             'whatsapp_number' => 'string|nullable',
             'slack_webhook' => 'url|nullable',
@@ -529,10 +532,13 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Update basic fields
         $user->update($request->only([
             'name',
             'email',
             'phone',
+            'location',
+            'bio',
             'telegram_chat_id',
             'whatsapp_number',
             'slack_webhook',
@@ -541,6 +547,19 @@ class AuthController extends Controller
             'timezone',
             'locale',
         ]));
+
+        // Handle avatar upload after update
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar && \Storage::disk('public')->exists($user->avatar)) {
+                \Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Store new avatar and update user
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $avatarPath;
+            $user->save();
+        }
 
         $user->available_notification_channels = $user->getAvailableNotificationChannels();
 
