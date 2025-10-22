@@ -114,7 +114,7 @@ class TaskController extends Controller
                     'filename' => $filename,
                     'original_name' => $originalName,
                     'path' => $path,
-                    'url' => Storage::disk('public')->url($path),
+                    'url' => config('app.url') . '/storage/' . $path,
                     'size' => $file->getSize(),
                     'type' => $file->getMimeType(),
                 ];
