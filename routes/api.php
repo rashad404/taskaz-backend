@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\ProfessionalApplicationController;
+use App\Http\Controllers\Api\StartupController;
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -147,3 +148,8 @@ Route::get('/{locale}/hello', function ($locale) {
         'status' => 'success'
     ]);
 })->where('locale', 'az|en|ru');
+
+// Startups Cross-Promotion (Public)
+Route::get('/startups', [StartupController::class, 'index']);
+Route::get('/startups/limited/{limit}', [StartupController::class, 'limited']);
+Route::post('/startups/clear-cache', [StartupController::class, 'clearCache'])->middleware('auth:sanctum');
