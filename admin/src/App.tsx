@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import UsersList from './pages/users/UsersList';
 import ProfessionalsList from './pages/professionals/ProfessionalsList';
+import CategoriesList from './pages/categories/CategoriesList';
+import CategoryForm from './pages/categories/CategoryForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 
@@ -29,6 +31,9 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="users" element={<UsersList />} />
             <Route path="professionals" element={<ProfessionalsList />} />
+            <Route path="categories" element={<CategoriesList />} />
+            <Route path="categories/new" element={<CategoryForm />} />
+            <Route path="categories/:id/edit" element={<CategoryForm />} />
           </Route>
         </Routes>
       </BrowserRouter>

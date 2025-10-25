@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProfessionalController;
+use App\Http\Controllers\Admin\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,10 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/professionals/{id}/approve', [ProfessionalController::class, 'approve']);
     Route::post('/professionals/{id}/reject', [ProfessionalController::class, 'reject']);
     Route::post('/professionals/{id}/revoke', [ProfessionalController::class, 'revoke']);
+
+    // Category management
+    Route::apiResource('categories', CategoryController::class);
+    Route::post('/categories/reorder', [CategoryController::class, 'reorder']);
 
     // Current user
     Route::get('/me', [AuthController::class, 'me']);

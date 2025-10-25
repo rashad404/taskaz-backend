@@ -15,14 +15,13 @@ class CategoryController extends Controller
     {
         $categories = Category::where('is_active', true)
             ->whereNull('parent_id')
-            ->with('children')
+            ->with(['children' => function($query) {
+                $query->where('is_active', true)->orderBy('order');
+            }])
             ->orderBy('order')
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $categories
-        ]);
+        return response()->json($categories);
     }
 
     /**
