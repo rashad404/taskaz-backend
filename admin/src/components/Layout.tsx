@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Home, FileText, LogOut, Menu, X, Mail, FolderOpen, Users, Images, Megaphone, Monitor, Building2, List, Briefcase, Folder } from 'lucide-react';
+import { Home, LogOut, Menu, X, Briefcase, Folder } from 'lucide-react';
 import { useState } from 'react';
 import { authService } from '../services/auth';
 

@@ -31,14 +31,4 @@ Route::get('/admin/{any?}', function ($any = null) {
 
 
 
-Route::get('/api/companies', fn() => Company::all());
-Route::get('/api/news', fn() => News::all());
-Route::get('/api/categories', fn() => Category::all());
-Route::get('/api/company-types', fn() => CompanyType::all());
-Route::get('/api/credits', fn() => Credit::all());
-Route::get('/api/meta-tags', fn() => MetaTag::all());
-Route::get('/api/users', fn() => User::all());
-Route::get('/api/files', fn() => File::all());
-Route::get('/api/audios', fn() => Audio::all());
-Route::get('/api/videos', fn() => Video::all());
-Route::get('/api/images', fn() => Image::all());
+// Removed old debug routes - use proper API controllers in routes/api.php instead

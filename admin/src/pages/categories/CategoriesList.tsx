@@ -1,8 +1,106 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Check, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Check, X, GripVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { categoriesService, Category } from '../../services/categories';
 import toast from 'react-hot-toast';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface SortableRowProps {
+  category: Category;
+  onDelete: (id: number, name: string) => void;
+  getParentName: (parentId: number | null) => string;
+}
+
+const SortableRow = ({ category, onDelete, getParentName }: SortableRowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <tr ref={setNodeRef} style={style} className="hover:bg-gray-50">
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          <button
+            className="cursor-grab active:cursor-grabbing mr-2 text-gray-400 hover:text-gray-600"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="w-5 h-5" />
+          </button>
+          <span className="text-sm font-medium text-gray-900">{category.order}</span>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm font-medium text-gray-900">{category.name}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-500">{category.slug}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-500">{category.icon || '-'}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-500">{getParentName(category.parent_id ?? null)}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        {category.is_active ? (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <Check className="w-3 h-3 mr-1" />
+            Active
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            <X className="w-3 h-3 mr-1" />
+            Inactive
+          </span>
+        )}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex items-center justify-end space-x-2">
+          <Link
+            to={`/categories/${category.id}/edit`}
+            className="text-indigo-600 hover:text-indigo-900"
+          >
+            <Edit className="w-4 h-4" />
+          </Link>
+          <button
+            onClick={() => onDelete(category.id, category.name)}
+            className="text-red-600 hover:text-red-900"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
 
 const CategoriesList = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -50,6 +148,47 @@ const CategoriesList = () => {
     return parent?.name || '-';
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = categories.findIndex((cat) => cat.id === active.id);
+    const newIndex = categories.findIndex((cat) => cat.id === over.id);
+
+    const newCategories = arrayMove(categories, oldIndex, newIndex);
+
+    // Update local state immediately for better UX
+    setCategories(newCategories);
+
+    // Update order values based on new positions
+    const ordersToUpdate = newCategories.map((cat, index) => ({
+      id: cat.id,
+      order: index,
+    }));
+
+    try {
+      await categoriesService.reorder(ordersToUpdate);
+      toast.success('Categories reordered successfully!');
+      // Refresh to get accurate order from backend
+      await fetchCategories();
+    } catch (err) {
+      console.error('Error reordering categories:', err);
+      toast.error('Failed to reorder categories');
+      // Revert on error
+      await fetchCategories();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -86,91 +225,62 @@ const CategoriesList = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Order
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Slug
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Icon
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Parent
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {categories.length === 0 ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  No categories found. Create your first category to get started.
-                </td>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Order
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Slug
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Icon
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Parent
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
-            ) : (
-              categories.map((category) => (
-                <tr key={category.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{category.order}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{category.slug}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{category.icon || '-'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{getParentName(category.parent_id)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {category.is_active ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <Check className="w-3 h-3 mr-1" />
-                        Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        <X className="w-3 h-3 mr-1" />
-                        Inactive
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Link
-                        to={`/categories/${category.id}/edit`}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(category.id, category.name)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <SortableContext
+              items={categories.map(cat => cat.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <tbody className="bg-white divide-y divide-gray-200">
+                {categories.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                      No categories found. Create your first category to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  categories.map((category) => (
+                    <SortableRow
+                      key={category.id}
+                      category={category}
+                      onDelete={handleDelete}
+                      getParentName={getParentName}
+                    />
+                  ))
+                )}
+              </tbody>
+            </SortableContext>
+          </table>
+        </DndContext>
       </div>
 
       <div className="mt-4 text-sm text-gray-600">
