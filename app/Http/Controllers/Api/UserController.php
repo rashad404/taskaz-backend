@@ -134,17 +134,18 @@ class UserController extends Controller
             ->withCount(['professionalContracts as completed_contracts' => function($query) {
                 $query->where('status', 'completed');
             }])
-            ->having('total_reviews', '>', 0)
-            ->orderBy('average_rating', 'desc')
+            // Sort by rating (nulls last), then by reviews, then by newest
+            ->orderByRaw('COALESCE(average_rating, 0) DESC')
             ->orderBy('total_reviews', 'desc')
+            ->orderBy('created_at', 'desc')
             ->limit($limit)
-            ->get(['id', 'name', 'email', 'avatar', 'bio', 'location']);
+            ->get(['id', 'name', 'email', 'avatar', 'bio', 'location', 'slug']);
 
-        // Round average rating to 1 decimal
+        // Round average rating to 1 decimal, set to 0 if null
         $professionals->each(function($professional) {
-            if ($professional->average_rating) {
-                $professional->average_rating = round($professional->average_rating, 1);
-            }
+            $professional->average_rating = $professional->average_rating
+                ? round($professional->average_rating, 1)
+                : 0;
         });
 
         return response()->json([
