@@ -112,8 +112,11 @@ Route::get('/districts/{id}/settlements', [DistrictController::class, 'settlemen
 // Public Marketplace Routes
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
-Route::get('/tasks', [TaskController::class, 'index']);
-Route::get('/tasks/{id}', [TaskController::class, 'show']);
+// Tasks routes with optional authentication (to check ownership)
+Route::middleware('auth.optional')->group(function () {
+    Route::get('/tasks', [TaskController::class, 'index']);
+    Route::get('/tasks/{id}', [TaskController::class, 'show']);
+});
 Route::get('/professionals', [UserController::class, 'index']);
 Route::get('/professionals/{identifier}', [UserController::class, 'show']);
 Route::get('/clients', [UserController::class, 'indexClients']);

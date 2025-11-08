@@ -74,6 +74,13 @@ class TaskController extends Controller
 
         $tasks = $query->paginate($request->get('per_page', 20));
 
+        // Add is_owner flag to each task
+        $tasks->getCollection()->transform(function ($task) {
+            $taskData = $task->toArray();
+            $taskData['is_owner'] = Auth::check() && $task->user_id === Auth::id();
+            return $taskData;
+        });
+
         return response()->json([
             'status' => 'success',
             'data' => $tasks
@@ -180,9 +187,13 @@ class TaskController extends Controller
         // Increment views
         $task->incrementViews();
 
+        // Add ownership flag
+        $taskData = $task->toArray();
+        $taskData['is_owner'] = Auth::check() && $task->user_id === Auth::id();
+
         return response()->json([
             'status' => 'success',
-            'data' => $task
+            'data' => $taskData
         ]);
     }
 
@@ -271,6 +282,13 @@ class TaskController extends Controller
             ->with(['category', 'applications'])
             ->latest()
             ->paginate($request->get('per_page', 20));
+
+        // Add is_owner flag to each task (always true for myTasks)
+        $tasks->getCollection()->transform(function ($task) {
+            $taskData = $task->toArray();
+            $taskData['is_owner'] = true; // Always true since these are user's own tasks
+            return $taskData;
+        });
 
         return response()->json([
             'status' => 'success',
