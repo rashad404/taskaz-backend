@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\ProfessionalApplicationController;
 use App\Http\Controllers\Api\StartupController;
+use App\Http\Controllers\Api\AnnouncementController;
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -91,6 +92,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/professional/status', [ProfessionalApplicationController::class, 'status']);
     Route::put('/professional/update', [ProfessionalApplicationController::class, 'update']);
     Route::post('/professional/reapply', [ProfessionalApplicationController::class, 'reapply']);
+
+    // Announcements
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
+    Route::get('/announcements/active', [AnnouncementController::class, 'active']);
+    Route::post('/announcements/dismiss', [AnnouncementController::class, 'dismiss']);
+    Route::post('/announcements/mark-seen', [AnnouncementController::class, 'markAsSeen']);
 });
 
 // Languages (public)

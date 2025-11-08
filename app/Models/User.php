@@ -254,4 +254,95 @@ class User extends Authenticatable
 
         return $channels;
     }
+
+    /**
+     * Get user announcements relationship.
+     */
+    public function announcements()
+    {
+        return $this->hasMany(UserAnnouncement::class);
+    }
+
+    /**
+     * Check if user has dismissed a specific announcement.
+     */
+    public function hasAnnouncementDismissed(string $announcementType): bool
+    {
+        return $this->announcements()
+            ->where('announcement_type', $announcementType)
+            ->whereNotNull('dismissed_at')
+            ->exists();
+    }
+
+    /**
+     * Dismiss an announcement for this user.
+     */
+    public function dismissAnnouncement(string $announcementType): UserAnnouncement
+    {
+        $announcement = $this->announcements()
+            ->firstOrCreate(
+                ['announcement_type' => $announcementType],
+                ['seen_at' => now()]
+            );
+
+        $announcement->markAsDismissed();
+
+        return $announcement;
+    }
+
+    /**
+     * Mark announcement as seen.
+     */
+    public function markAnnouncementAsSeen(string $announcementType): UserAnnouncement
+    {
+        $announcement = $this->announcements()
+            ->firstOrCreate(['announcement_type' => $announcementType]);
+
+        $announcement->markAsSeen();
+
+        return $announcement;
+    }
+
+    /**
+     * Get all active (non-dismissed) announcements for user.
+     */
+    public function getActiveAnnouncements()
+    {
+        return $this->announcements()
+            ->whereNull('dismissed_at')
+            ->get();
+    }
+
+    /**
+     * Get dismissal status for multiple announcement types.
+     */
+    public function getAnnouncementStatuses(array $announcementTypes): array
+    {
+        $announcements = $this->announcements()
+            ->whereIn('announcement_type', $announcementTypes)
+            ->get()
+            ->keyBy('announcement_type');
+
+        $statuses = [];
+        foreach ($announcementTypes as $type) {
+            if ($announcements->has($type)) {
+                $announcement = $announcements->get($type);
+                $statuses[$type] = [
+                    'seen' => !is_null($announcement->seen_at),
+                    'dismissed' => !is_null($announcement->dismissed_at),
+                    'seen_at' => $announcement->seen_at,
+                    'dismissed_at' => $announcement->dismissed_at,
+                ];
+            } else {
+                $statuses[$type] = [
+                    'seen' => false,
+                    'dismissed' => false,
+                    'seen_at' => null,
+                    'dismissed_at' => null,
+                ];
+            }
+        }
+
+        return $statuses;
+    }
 }
