@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Clock, User, Mail, MapPin, DollarSign, Briefcase, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, Mail, MapPin, DollarSign, Briefcase, Eye, Edit } from 'lucide-react';
 import { professionalsService, Professional } from '../../services/professionals';
 import toast from 'react-hot-toast';
 
@@ -239,7 +239,7 @@ const ProfessionalsList = () => {
                   </div>
 
                   {/* Bio */}
-                  <div className="mt-4">
+                  <div className="mt-4 flex items-center gap-3">
                     <button
                       onClick={() => setSelectedProfessional(selectedProfessional?.id === professional.id ? null : professional)}
                       className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
@@ -247,6 +247,15 @@ const ProfessionalsList = () => {
                       <Eye className="h-4 w-4" />
                       {selectedProfessional?.id === professional.id ? 'Hide Details' : 'View Details'}
                     </button>
+                    <a
+                      href={`${import.meta.env.VITE_FRONTEND_URL || 'http://100.89.150.50:3008'}/professionals/${professional.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                    >
+                      <Edit className="h-4 w-4" />
+                      View Profile
+                    </a>
                   </div>
                 </div>
 

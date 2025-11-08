@@ -116,9 +116,9 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::middleware('auth.optional')->group(function () {
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::get('/tasks/{id}', [TaskController::class, 'show']);
+    Route::get('/professionals', [UserController::class, 'index']);
+    Route::get('/professionals/{identifier}', [UserController::class, 'show']);
 });
-Route::get('/professionals', [UserController::class, 'index']);
-Route::get('/professionals/{identifier}', [UserController::class, 'show']);
 Route::get('/clients', [UserController::class, 'indexClients']);
 Route::get('/clients/{identifier}', [UserController::class, 'showClient']);
 Route::get('/users/{userId}/reviews', [ReviewController::class, 'userReviews']);
