@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import UsersList from './pages/users/UsersList';
+import UsersForm from './pages/users/UsersForm';
 import ProfessionalsList from './pages/professionals/ProfessionalsList';
 import CategoriesList from './pages/categories/CategoriesList';
 import CategoryForm from './pages/categories/CategoryForm';
@@ -30,6 +31,8 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="users" element={<UsersList />} />
+            <Route path="users/create" element={<UsersForm />} />
+            <Route path="users/edit/:id" element={<UsersForm />} />
             <Route path="professionals" element={<ProfessionalsList />} />
             <Route path="categories" element={<CategoriesList />} />
             <Route path="categories/new" element={<CategoryForm />} />

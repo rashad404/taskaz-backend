@@ -3,6 +3,7 @@ import api from './api';
 export interface Professional {
   id: number;
   name: string;
+  slug?: string;
   email: string;
   bio: string;
   location: string;

@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Home, LogOut, Menu, X, Briefcase, Folder } from 'lucide-react';
+import { Home, LogOut, Menu, X, Briefcase, Folder, Users } from 'lucide-react';
 import { useState } from 'react';
 import { authService } from '../services/auth';
 
@@ -19,6 +19,7 @@ export default function Layout() {
 
   const menuItems = [
     { path: '/dashboard', icon: Home, label: 'Dashboard' },
+    { path: '/users', icon: Users, label: 'Users' },
     { path: '/categories', icon: Folder, label: 'Categories' },
     { path: '/professionals', icon: Briefcase, label: 'Professionals' },
   ];
