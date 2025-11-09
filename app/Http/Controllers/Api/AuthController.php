@@ -69,10 +69,19 @@ class AuthController extends Controller
             'message' => 'Registration successful',
             'data' => [
                 'user' => $user,
-                'token' => $token,
                 'return_url' => $request->return_url ?? null,
             ]
-        ], 201);
+        ], 201)->cookie(
+            'auth_token',
+            $token,
+            43200, // 30 days in minutes
+            '/',
+            null,
+            config('app.env') === 'production', // secure (HTTPS only in production)
+            true, // httpOnly
+            false,
+            'strict' // sameSite
+        );
     }
 
     /**
@@ -108,10 +117,19 @@ class AuthController extends Controller
             'message' => 'Login successful',
             'data' => [
                 'user' => $user,
-                'token' => $token,
                 'return_url' => $request->return_url ?? null,
             ]
-        ]);
+        ])->cookie(
+            'auth_token',
+            $token,
+            43200, // 30 days in minutes
+            '/',
+            null,
+            config('app.env') === 'production', // secure (HTTPS only in production)
+            true, // httpOnly
+            false,
+            'strict' // sameSite
+        );
     }
 
     /**
@@ -237,11 +255,20 @@ class AuthController extends Controller
             'message' => 'Phone verified successfully',
             'data' => [
                 'user' => $user,
-                'token' => $token,
                 'return_url' => $request->return_url ?? null,
                 'debug' => $result['debug'] ?? null, // Include debug info in local mode
             ]
-        ]);
+        ])->cookie(
+            'auth_token',
+            $token,
+            43200, // 30 days in minutes
+            '/',
+            null,
+            config('app.env') === 'production', // secure (HTTPS only in production)
+            true, // httpOnly
+            false,
+            'strict' // sameSite
+        );
     }
 
     /**
@@ -584,7 +611,17 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Logged out successfully'
-        ]);
+        ])->cookie(
+            'auth_token',
+            '',
+            -1, // Expire immediately
+            '/',
+            null,
+            config('app.env') === 'production', // secure (HTTPS only in production)
+            true,
+            false,
+            'strict'
+        );
     }
 
     /**
