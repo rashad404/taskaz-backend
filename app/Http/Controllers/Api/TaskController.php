@@ -279,7 +279,8 @@ class TaskController extends Controller
     public function myTasks(Request $request)
     {
         $tasks = Task::where('user_id', Auth::id())
-            ->with(['category', 'applications'])
+            ->with(['category'])
+            ->withCount('applications')
             ->latest()
             ->paginate($request->get('per_page', 20));
 
