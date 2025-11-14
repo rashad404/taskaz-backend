@@ -38,7 +38,8 @@ class ProfessionalApplicationController extends Controller
 
         $validated = $request->validate([
             'bio' => 'required|string|min:50|max:1000',
-            'city_id' => 'required|exists:cities,id',
+            'is_remote' => 'boolean',
+            'city_id' => 'required_if:is_remote,false|nullable|exists:cities,id',
             'district_id' => 'nullable|exists:districts,id',
             'settlement_id' => 'nullable|exists:settlements,id',
             'metro_station_id' => 'nullable|exists:metro_stations,id',
@@ -52,9 +53,10 @@ class ProfessionalApplicationController extends Controller
             'portfolio_items.*.project_url' => 'nullable|url|max:500',
         ]);
 
-        // Build location string from IDs
-        $location = $this->buildLocationString(
-            $validated['city_id'],
+        // Build location string from IDs (if not remote)
+        $isRemote = $validated['is_remote'] ?? false;
+        $location = $isRemote ? 'Remote' : $this->buildLocationString(
+            $validated['city_id'] ?? null,
             $validated['district_id'] ?? null,
             $validated['settlement_id'] ?? null,
             $validated['metro_station_id'] ?? null
@@ -64,10 +66,11 @@ class ProfessionalApplicationController extends Controller
         $user->update([
             'bio' => $validated['bio'],
             'location' => $location,
-            'city_id' => $validated['city_id'],
-            'district_id' => $validated['district_id'] ?? null,
-            'settlement_id' => $validated['settlement_id'] ?? null,
-            'metro_station_id' => $validated['metro_station_id'] ?? null,
+            'is_remote' => $isRemote,
+            'city_id' => $isRemote ? null : ($validated['city_id'] ?? null),
+            'district_id' => $isRemote ? null : ($validated['district_id'] ?? null),
+            'settlement_id' => $isRemote ? null : ($validated['settlement_id'] ?? null),
+            'metro_station_id' => $isRemote ? null : ($validated['metro_station_id'] ?? null),
             'skills' => $validated['skills'],
             'hourly_rate' => $validated['hourly_rate'],
             'portfolio_items' => $validated['portfolio_items'] ?? null,
