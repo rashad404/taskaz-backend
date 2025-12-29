@@ -57,4 +57,10 @@ return [
         'base_url' => env('SMS_BASE_URL', 'https://sms-provider.az/api'),
     ],
 
+    'alertaz' => [
+        'api_key' => env('ALERTAZ_API_KEY'),
+        'client_api_key' => env('ALERTAZ_CLIENT_API_KEY'),
+        'url' => env('ALERTAZ_URL', 'http://100.89.150.50:8095/api'),
+    ],
+
 ];

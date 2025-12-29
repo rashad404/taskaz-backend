@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\ProfessionalApplicationController;
 use App\Http\Controllers\Api\StartupController;
 use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\AlertazExportController;
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -163,3 +164,8 @@ Route::get('/{locale}/hello', function ($locale) {
 Route::get('/startups', [StartupController::class, 'index']);
 Route::get('/startups/limited/{limit}', [StartupController::class, 'limited']);
 Route::post('/startups/clear-cache', [StartupController::class, 'clearCache'])->middleware('auth:sanctum');
+
+// Alert.az Export Routes
+Route::prefix('alertaz')->middleware('alertaz.auth')->group(function () {
+    Route::get('/users', [AlertazExportController::class, 'users']);
+});

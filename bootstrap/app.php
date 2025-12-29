@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'cors' => \Illuminate\Http\Middleware\HandleCors::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'auth.optional' => \App\Http\Middleware\OptionalAuthenticate::class,
+            'alertaz.auth' => \App\Http\Middleware\AlertazApiAuth::class,
         ]);
 
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
