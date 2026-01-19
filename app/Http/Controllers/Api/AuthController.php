@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
@@ -669,5 +671,305 @@ class AuthController extends Controller
             'status' => 'success',
             'message' => 'Password changed successfully'
         ]);
+    }
+
+    // =====================
+    // Kimlik.az OAuth Methods
+    // =====================
+
+    /**
+     * Handle Kimlik.az OAuth callback.
+     */
+    public function walletCallback(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|string',
+            'code_verifier' => 'required|string',
+            'redirect_uri' => 'required|string|url',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $walletApiUrl = env('WALLET_API_URL', 'http://100.89.150.50:8011/api');
+            $clientId = env('WALLET_CLIENT_ID');
+            $clientSecret = env('WALLET_CLIENT_SECRET');
+
+            // Exchange authorization code for tokens
+            $tokenPayload = [
+                'grant_type' => 'authorization_code',
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+                'code' => $request->code,
+                'redirect_uri' => $request->redirect_uri,
+                'code_verifier' => $request->code_verifier,
+            ];
+
+            Log::info('Wallet OAuth token exchange request', [
+                'redirect_uri' => $request->redirect_uri,
+                'wallet_api_url' => $walletApiUrl,
+            ]);
+
+            $tokenResponse = Http::post("{$walletApiUrl}/oauth/token", $tokenPayload);
+
+            if (!$tokenResponse->successful()) {
+                Log::error('Wallet OAuth token exchange failed', [
+                    'status' => $tokenResponse->status(),
+                    'body' => $tokenResponse->body(),
+                    'sent_redirect_uri' => $request->redirect_uri,
+                ]);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to exchange authorization code'
+                ], 400);
+            }
+
+            $tokens = $tokenResponse->json();
+
+            // Fetch user data from Kimlik.az
+            $userResponse = Http::withToken($tokens['access_token'])
+                ->get("{$walletApiUrl}/oauth/user");
+
+            if (!$userResponse->successful()) {
+                Log::error('Wallet OAuth user fetch failed', [
+                    'status' => $userResponse->status(),
+                    'body' => $userResponse->body()
+                ]);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to fetch user data'
+                ], 400);
+            }
+
+            $walletUser = $userResponse->json()['data'];
+
+            // Find user by wallet_id first, then by email, then by phone (for migration)
+            $user = User::where('wallet_id', $walletUser['id'])->first();
+
+            if (!$user && !empty($walletUser['email'])) {
+                $user = User::where('email', $walletUser['email'])->first();
+            }
+
+            if (!$user && !empty($walletUser['phone'])) {
+                $user = User::where('phone', $walletUser['phone'])->first();
+            }
+
+            $verification = $walletUser['verification'] ?? [];
+            $emailVerified = $verification['email_verified'] ?? false;
+            $phoneVerified = $verification['phone_verified'] ?? false;
+
+            // Calculate token expiry (default 30 days if not provided)
+            $tokenExpiresAt = now()->addSeconds($tokens['expires_in'] ?? 2592000);
+
+            if (!$user) {
+                // Generate unique slug from name
+                $baseSlug = Str::slug($walletUser['name']);
+                $slug = $baseSlug;
+                $counter = 1;
+
+                while (User::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+
+                $user = User::create([
+                    'name' => $walletUser['name'],
+                    'slug' => $slug,
+                    'email' => $walletUser['email'] ?? null,
+                    'phone' => $walletUser['phone'] ?? null,
+                    'avatar' => $walletUser['avatar'] ?? null,
+                    'wallet_id' => $walletUser['id'],
+                    'wallet_access_token' => $tokens['access_token'],
+                    'wallet_refresh_token' => $tokens['refresh_token'] ?? null,
+                    'wallet_token_expires_at' => $tokenExpiresAt,
+                    'provider' => 'wallet',
+                    'email_verified_at' => $emailVerified ? now() : null,
+                    'phone_verified_at' => $phoneVerified ? now() : null,
+                    'locale' => 'az',
+                    'timezone' => 'Asia/Baku',
+                ]);
+            } else {
+                // Update user with latest data from Kimlik.az
+                $user->update([
+                    'wallet_id' => $walletUser['id'],
+                    'wallet_access_token' => $tokens['access_token'],
+                    'wallet_refresh_token' => $tokens['refresh_token'] ?? null,
+                    'wallet_token_expires_at' => $tokenExpiresAt,
+                    'name' => $walletUser['name'],
+                    'avatar' => $walletUser['avatar'] ?? $user->avatar,
+                    'phone' => $walletUser['phone'] ?? $user->phone,
+                    'email_verified_at' => $emailVerified ? ($user->email_verified_at ?? now()) : $user->email_verified_at,
+                    'phone_verified_at' => $phoneVerified ? ($user->phone_verified_at ?? now()) : $user->phone_verified_at,
+                ]);
+            }
+
+            // Create token for our app
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login successful',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token,
+                ]
+            ])->cookie(
+                'auth_token',
+                $token,
+                43200, // 30 days in minutes
+                '/',
+                null,
+                config('app.env') === 'production',
+                true,
+                false,
+                'strict'
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Wallet OAuth error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Authentication failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Sync user profile from Kimlik.az.
+     * Called when user returns from editing profile on Kimlik.az.
+     */
+    public function syncFromWallet(Request $request)
+    {
+        $user = $request->user();
+
+        // Only for Kimlik.az users
+        if (!$user->wallet_id || !$user->wallet_access_token) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not a Kimlik.az user'
+            ], 400);
+        }
+
+        try {
+            $walletApiUrl = env('WALLET_API_URL', 'http://100.89.150.50:8011/api');
+
+            // Fetch fresh user data from Kimlik.az
+            $userResponse = Http::withToken($user->wallet_access_token)
+                ->get("{$walletApiUrl}/oauth/user");
+
+            if (!$userResponse->successful()) {
+                // Token might be expired, try to refresh
+                if ($user->wallet_refresh_token) {
+                    $refreshed = $this->refreshWalletToken($user);
+                    if (!$refreshed) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Failed to refresh Kimlik.az token'
+                        ], 401);
+                    }
+
+                    // Retry with new token
+                    $userResponse = Http::withToken($user->wallet_access_token)
+                        ->get("{$walletApiUrl}/oauth/user");
+
+                    if (!$userResponse->successful()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Failed to fetch user data from Kimlik.az'
+                        ], 400);
+                    }
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Failed to fetch user data from Kimlik.az'
+                    ], 400);
+                }
+            }
+
+            $walletUser = $userResponse->json()['data'];
+            $verification = $walletUser['verification'] ?? [];
+            $emailVerified = $verification['email_verified'] ?? false;
+            $phoneVerified = $verification['phone_verified'] ?? false;
+
+            // Update user with fresh data from Kimlik.az
+            $user->update([
+                'name' => $walletUser['name'],
+                'avatar' => $walletUser['avatar'] ?? $user->avatar,
+                'phone' => $walletUser['phone'] ?? $user->phone,
+                'email_verified_at' => $emailVerified ? ($user->email_verified_at ?? now()) : $user->email_verified_at,
+                'phone_verified_at' => $phoneVerified ? ($user->phone_verified_at ?? now()) : $user->phone_verified_at,
+            ]);
+
+            $user->refresh();
+            $user->available_notification_channels = $user->getAvailableNotificationChannels();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Profile synced from Kimlik.az',
+                'data' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Wallet sync error', [
+                'user_id' => $user->id,
+                'message' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to sync profile'
+            ], 500);
+        }
+    }
+
+    /**
+     * Refresh Kimlik.az access token.
+     */
+    protected function refreshWalletToken(User $user): bool
+    {
+        try {
+            $walletApiUrl = env('WALLET_API_URL', 'http://100.89.150.50:8011/api');
+            $clientId = env('WALLET_CLIENT_ID');
+            $clientSecret = env('WALLET_CLIENT_SECRET');
+
+            $tokenResponse = Http::post("{$walletApiUrl}/oauth/token", [
+                'grant_type' => 'refresh_token',
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+                'refresh_token' => $user->wallet_refresh_token,
+            ]);
+
+            if (!$tokenResponse->successful()) {
+                return false;
+            }
+
+            $tokens = $tokenResponse->json();
+            $tokenExpiresAt = now()->addSeconds($tokens['expires_in'] ?? 2592000);
+
+            $user->update([
+                'wallet_access_token' => $tokens['access_token'],
+                'wallet_refresh_token' => $tokens['refresh_token'] ?? $user->wallet_refresh_token,
+                'wallet_token_expires_at' => $tokenExpiresAt,
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('Wallet token refresh failed', [
+                'user_id' => $user->id,
+                'message' => $e->getMessage()
+            ]);
+            return false;
+        }
     }
 }

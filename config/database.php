@@ -112,6 +112,21 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'kimlik' => [
+            'driver' => 'mysql',
+            'host' => env('KIMLIK_DB_HOST', '127.0.0.1'),
+            'port' => env('KIMLIK_DB_PORT', '3306'),
+            'database' => env('KIMLIK_DB_DATABASE', 'wallet'),
+            'username' => env('KIMLIK_DB_USERNAME', 'root'),
+            'password' => env('KIMLIK_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
     ],
 
     /*

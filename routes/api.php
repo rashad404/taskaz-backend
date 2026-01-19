@@ -44,6 +44,9 @@ Route::prefix('auth')->group(function () {
         ->where('provider', 'google|facebook');
     Route::get('/{provider}/callback', [AuthController::class, 'handleProviderCallback'])
         ->where('provider', 'google|facebook');
+
+    // Kimlik.az OAuth callback
+    Route::post('/wallet/callback', [AuthController::class, 'walletCallback']);
 });
 
 // Protected Routes
@@ -52,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'me']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/user/change-password', [AuthController::class, 'changePassword']);
+    Route::post('/user/sync-from-wallet', [AuthController::class, 'syncFromWallet']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     // Tasks

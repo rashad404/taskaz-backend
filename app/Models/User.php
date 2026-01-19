@@ -53,6 +53,10 @@ class User extends Authenticatable
         'professional_application_date',
         'professional_approved_at',
         'professional_rejected_reason',
+        'wallet_id',
+        'wallet_access_token',
+        'wallet_refresh_token',
+        'wallet_token_expires_at',
     ];
 
     /**
@@ -66,6 +70,8 @@ class User extends Authenticatable
         'google_id',
         'facebook_id',
         'provider_id',
+        'wallet_access_token',
+        'wallet_refresh_token',
     ];
 
     /**
@@ -86,6 +92,7 @@ class User extends Authenticatable
             'professional_application_date' => 'datetime',
             'professional_approved_at' => 'datetime',
             'hourly_rate' => 'decimal:2',
+            'wallet_token_expires_at' => 'datetime',
         ];
     }
 
